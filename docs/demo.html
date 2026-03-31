@@ -11,11 +11,11 @@
         :root { --primary: #6366f1; --bg: #0b1121; --surface: #111827; --border: rgba(255, 255, 255, 0.05); --text: #e2e8f0; --text-muted: #94a3b8; }
         body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; overflow-x: hidden; }
         .app-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; height: 100vh; padding: 2rem 1rem; display: flex; flex-direction: column; }
+        .sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; height: 100vh; padding: 2rem 1rem; display: flex; flex-direction: column; z-index: 1000; }
         .brand-text { font-weight: 700; font-size: 1.25rem; color: white; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; }
         .brand-badge { background: var(--primary); font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 99px; }
         .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-        .nav-item { color: var(--text-muted); text-decoration: none; padding: 0.85rem 1.25rem; border-radius: 1rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; }
+        .nav-item { color: var(--text-muted); text-decoration: none; padding: 0.85rem 1.25rem; border-radius: 1rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
         .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
         .main-content { flex: 1; margin-left: 280px; padding: 3rem; }
         .panel { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 2rem; }
@@ -28,6 +28,14 @@
         .bg-available { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .bg-inuse { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
         .bg-maint { background: rgba(115, 115, 115, 0.1); color: #a3a3a3; }
+        
+        /* Modal Style for Dark Theme */
+        .modal-content { background-color: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 1rem; }
+        .modal-header { border-bottom: 1px solid var(--border); }
+        .modal-footer { border-top: 1px solid var(--border); }
+        .form-control, .form-select { background-color: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); }
+        .form-control:focus, .form-select:focus { background-color: rgba(255,255,255,0.1); color: white; border-color: var(--primary); box-shadow: none; }
+        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
     </style>
 </head>
 <body>
@@ -35,49 +43,199 @@
         <aside class="sidebar">
             <div class="sidebar-header"><a class="brand-text" href="index.html"><i class="bi bi-box-seam-fill text-primary"></i> AssetFlow <span class="brand-badge">DEMO</span></a></div>
             <nav class="nav-menu">
-                <a class="nav-item active" href="#" onclick="showView('equipments', this)"><i class="bi bi-columns-gap"></i><span>控制台</span></a>
-                <a class="nav-item" href="#" onclick="showView('records', this)"><i class="bi bi-clock-history"></i><span>借用紀錄</span></a>
+                <a class="nav-item active" onclick="showView('equipments', this)"><i class="bi bi-columns-gap"></i><span>控制台</span></a>
+                <a class="nav-item" onclick="showView('records', this)"><i class="bi bi-clock-history"></i><span>借用紀錄</span></a>
             </nav>
         </aside>
+        
         <main class="main-content">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold mb-1">儀表板</h1>
+                    <p class="text-muted small mb-0">純前端展示版，所有資料即時儲存於您的瀏覽器中。</p>
+                </div>
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="bi bi-plus-lg me-1"></i> 新增設備
+                </button>
+            </header>
+
             <div id="view-equipments" class="view-item">
                 <div class="row g-4 mb-4">
                     <div class="col-md-4"><div class="panel metric-card"><span class="label">設備總數</span><div class="value" id="s-total">0</div></div></div>
                     <div class="col-md-4"><div class="panel metric-card"><span class="label">使用中</span><div class="value text-info" id="s-use">0</div></div></div>
                     <div class="col-md-4"><div class="panel metric-card"><span class="label">維修中</span><div class="value text-muted" id="s-maint">0</div></div></div>
                 </div>
-                <div class="panel"><h3 class="h5 fw-bold mb-4">設備清單</h3><table class="custom-table"><thead><tr><th>名稱</th><th>類別</th><th>狀態</th><th class="text-end">操作</th></tr></thead><tbody id="eq-list"></tbody></table></div>
+                
+                <div class="panel">
+                    <h3 class="h5 fw-bold mb-4">設備清單</h3>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>名稱</th>
+                                <th>類別</th>
+                                <th>狀態</th>
+                                <th class="text-end">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eq-list"></tbody>
+                    </table>
+                </div>
             </div>
-            <div id="view-records" class="view-item d-none"><div class="panel"><h3 class="h5 fw-bold mb-4">最近借用動態</h3><table class="custom-table"><thead><tr><th>設備</th><th>人員</th><th>時間</th><th>狀態</th></tr></thead><tbody id="rec-list"></tbody></table></div></div>
+
+            <div id="view-records" class="view-item d-none">
+                <div class="panel">
+                    <h3 class="h5 fw-bold mb-4">借用動態紀錄</h3>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>設備</th>
+                                <th>人員</th>
+                                <th>時間</th>
+                                <th>狀態</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rec-list"></tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
+
+    <!-- 新增設備 Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">新增設備</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">設備名稱</label>
+                        <input type="text" id="add-name" class="form-control" placeholder="例如: MacBook Pro M3">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">設備類別</label>
+                        <select id="add-cat" class="form-select">
+                            <option value="Laptop">筆記型電腦 (Laptop)</option>
+                            <option value="Camera">攝影器材 (Camera)</option>
+                            <option value="Tool">工具/儀器 (Tool)</option>
+                            <option value="Other">其他 (Other)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary text-white" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewEquipment()">確認新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const MOCK = [{id:1,name:"Canon EOS R10",cat:"Camera",stat:"Available"},{id:2,name:"Dell Latitude",cat:"Laptop",stat:"In Use"},{id:3,name:"Fluke 87V",cat:"Tool",stat:"Maintenance"}];
+        const MOCK = [
+            {id:1, name:"Canon EOS R10", cat:"Camera", stat:"Available"},
+            {id:2, name:"Dell Latitude", cat:"Laptop", stat:"In Use"},
+            {id:3, name:"Fluke 87V", cat:"Tool", stat:"Maintenance"}
+        ];
+        
         let eqs = JSON.parse(localStorage.getItem('ems_gh_eq')) || MOCK;
-        let recs = JSON.parse(localStorage.getItem('ems_gh_rec')) || [{name:"Dell Latitude",user:"Admin",time:"2026-03-31 09:00",st:"Borrowed"}];
-        const save = () => { localStorage.setItem('ems_gh_eq', JSON.stringify(eqs)); localStorage.setItem('ems_gh_rec', JSON.stringify(recs)); render(); };
+        let recs = JSON.parse(localStorage.getItem('ems_gh_rec')) || [{name:"Dell Latitude", user:"Admin", time:"2026-03-31 09:00", st:"Borrowed"}];
+        
+        let modalInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalInstance = new bootstrap.Modal(document.getElementById('addModal'));
+            render();
+        });
+
+        const save = () => { 
+            localStorage.setItem('ems_gh_eq', JSON.stringify(eqs)); 
+            localStorage.setItem('ems_gh_rec', JSON.stringify(recs)); 
+            render(); 
+        };
+
         const render = () => {
-            const list = document.getElementById('eq-list'); list.innerHTML = "";
+            const list = document.getElementById('eq-list'); 
+            list.innerHTML = "";
             eqs.forEach(e => {
                 const tr = document.createElement('tr');
-                const badge = e.stat==='Available'?'bg-available':(e.stat==='In Use'?'bg-inuse':'bg-maint');
-                tr.innerHTML = `<td class="fw-bold">${e.name}</td><td>${e.cat}</td><td><span class="badge ${badge}">${e.stat}</span></td>
-                <td class="text-end">
-                    ${e.stat==='Available'?`<button class="btn btn-sm btn-outline-primary" onclick="borrowItem(${e.id})">借用</button>`:''}
-                    ${e.stat==='In Use'?`<button class="btn btn-sm btn-outline-info" onclick="returnItem(${e.id})">歸還</button>`:''}
-                </td>`;
+                const badge = e.stat === 'Available' ? 'bg-available' : (e.stat === 'In Use' ? 'bg-inuse' : 'bg-maint');
+                tr.innerHTML = `
+                    <td class="fw-bold">${e.name}</td>
+                    <td><span class="text-muted small">${e.cat}</span></td>
+                    <td><span class="badge ${badge}">${e.stat}</span></td>
+                    <td class="text-end">
+                        ${e.stat === 'Available' ? `<button class="btn btn-sm btn-outline-primary" onclick="borrowItem(${e.id})">借用</button>` : ''}
+                        ${e.stat === 'In Use' ? `<button class="btn btn-sm btn-outline-info" onclick="returnItem(${e.id})">歸還</button>` : ''}
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem(${e.id})" title="刪除設備"><i class="bi bi-trash"></i></button>
+                    </td>`;
                 list.appendChild(tr);
             });
-            const rl = document.getElementById('rec-list'); rl.innerHTML = "";
-            recs.forEach(r => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${r.name}</td><td>${r.user}</td><td class="text-muted small">${r.time}</td><td>${r.st}</td>`; rl.appendChild(tr); });
+
+            const rl = document.getElementById('rec-list'); 
+            rl.innerHTML = "";
+            recs.forEach(r => { 
+                const tr = document.createElement('tr'); 
+                const stBadge = r.st === 'Borrowed' ? 'text-info' : 'text-success';
+                tr.innerHTML = `
+                    <td class="fw-bold">${r.name}</td>
+                    <td><span class="badge bg-secondary bg-opacity-25 text-white">${r.user}</span></td>
+                    <td class="text-muted small">${r.time}</td>
+                    <td class="${stBadge} fw-bold small">${r.st}</td>`; 
+                rl.appendChild(tr); 
+            });
+
             document.getElementById('s-total').innerText = eqs.length;
-            document.getElementById('s-use').innerText = eqs.filter(e => e.stat==='In Use').length;
-            document.getElementById('s-maint').innerText = eqs.filter(e => e.stat==='Maintenance').length;
+            document.getElementById('s-use').innerText = eqs.filter(e => e.stat === 'In Use').length;
+            document.getElementById('s-maint').innerText = eqs.filter(e => e.stat === 'Maintenance').length;
         };
-        window.borrowItem = (id) => { const e = eqs.find(x=>x.id===id); e.stat = 'In Use'; recs.unshift({name:e.name,user:"User",time:new Date().toLocaleString(),st:"Borrowed"}); save(); };
-        window.returnItem = (id) => { const e = eqs.find(x=>x.id===id); e.stat = 'Available'; recs.unshift({name:e.name,user:"User",time:new Date().toLocaleString(),st:"Returned"}); save(); };
-        window.showView = (v, el) => { document.querySelectorAll('.view-item').forEach(x=>x.classList.add('d-none')); document.getElementById(`view-${v}`).classList.remove('d-none'); document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active')); el.classList.add('active'); };
-        render();
+
+        window.borrowItem = (id) => { 
+            const e = eqs.find(x => x.id === id); 
+            e.stat = 'In Use'; 
+            recs.unshift({name:e.name, user:"User" + Math.floor(Math.random()*100), time:new Date().toLocaleString(), st:"Borrowed"}); 
+            save(); 
+        };
+
+        window.returnItem = (id) => { 
+            const e = eqs.find(x => x.id === id); 
+            e.stat = 'Available'; 
+            recs.unshift({name:e.name, user:"System", time:new Date().toLocaleString(), st:"Returned"}); 
+            save(); 
+        };
+
+        window.deleteItem = (id) => {
+            if(confirm("確定要刪除這項設備嗎？")) {
+                eqs = eqs.filter(x => x.id !== id);
+                save();
+            }
+        };
+
+        window.openAddModal = () => {
+            document.getElementById('add-name').value = '';
+            modalInstance.show();
+        };
+
+        window.saveNewEquipment = () => {
+            const name = document.getElementById('add-name').value.trim();
+            const cat = document.getElementById('add-cat').value;
+            if(!name) return alert("請輸入設備名稱");
+
+            const newId = eqs.length > 0 ? Math.max(...eqs.map(e => e.id)) + 1 : 1;
+            eqs.push({id: newId, name: name, cat: cat, stat: "Available"});
+            
+            save();
+            modalInstance.hide();
+        };
+
+        window.showView = (v, el) => { 
+            document.querySelectorAll('.view-item').forEach(x => x.classList.add('d-none')); 
+            document.getElementById(`view-${v}`).classList.remove('d-none'); 
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); 
+            el.classList.add('active'); 
+        };
     </script>
 </body>
 </html>

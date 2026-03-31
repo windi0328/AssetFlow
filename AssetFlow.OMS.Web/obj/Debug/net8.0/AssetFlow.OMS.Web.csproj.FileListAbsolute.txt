@@ -142,4 +142,4 @@ C:\Users\葉秉浩\Documents\AssetFlow\AssetFlow.OMS.Web\obj\Debug\net8.0\refint
 C:\Users\葉秉浩\Documents\AssetFlow\AssetFlow.OMS.Web\obj\Debug\net8.0\AssetFlow.OMS.Web.pdb
 C:\Users\葉秉浩\Documents\AssetFlow\AssetFlow.OMS.Web\obj\Debug\net8.0\AssetFlow.OMS.Web.genruntimeconfig.cache
 C:\Users\葉秉浩\Documents\AssetFlow\AssetFlow.OMS.Web\obj\Debug\net8.0\ref\AssetFlow.OMS.Web.dll
-C:\Users\葉秉浩\Documents\AssetFlow\AssetFlow.OMS.Web\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\Users\葉秉浩\Documents\AssetFlow\AssetFlow.OMS.Web\obj\Debug\net8.0\AssetFlow.OMS.Web.sourcelink.json

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AssetFlow.OMS.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1db6101124601f5bbab56d9a53915086217189fb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4416f225b49074d51b1037f971647232cd75feee")]
 [assembly: System.Reflection.AssemblyProductAttribute("AssetFlow.OMS.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AssetFlow.OMS.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
