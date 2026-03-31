@@ -1,0 +1,126 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard 控制台";
+}
+
+<div class="subtitle">👋 您好！以下是您目前的設備資產概況與最近的借用動態。</div>
+
+<!-- 快速統計指標 (Metric Cards) -->
+<section class="grid-3 mb-5">
+    <div class="panel metric-card">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="label">設備總數 (Total Assets)</span>
+            <i class="bi bi-box text-primary h4 mb-0 opacity-50"></i>
+        </div>
+        <div class="value">@Model.Summary.TotalEquipmentCount</div>
+        <div class="small @(Model.Summary.TotalEquipmentCount > 0 ? "text-success" : "text-muted")">
+            <i class="bi bi-arrow-up-right me-1"></i> 數據已更新
+        </div>
+    </div>
+    
+    <div class="panel metric-card">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="label">進行中借用 (Active)</span>
+            <i class="bi bi-arrow-repeat text-accent-blue h4 mb-0 opacity-50"></i>
+        </div>
+        <div class="value">@Model.Summary.ActiveBorrowCount</div>
+        <div class="small">目前有 <span class="text-accent-blue fw-bold">@Model.Summary.ActiveBorrowCount</span> 筆資產在外</div>
+    </div>
+    
+    <div class="panel metric-card">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="label">逾期未還 (Overdue)</span>
+            <i class="bi bi-exclamation-triangle text-danger h4 mb-0 opacity-50"></i>
+        </div>
+        <div class="value text-danger">@Model.Summary.OverdueBorrowCount</div>
+        <div class="small text-danger opacity-75">
+            需要立即處理
+        </div>
+    </div>
+</section>
+
+<!-- 設備詳情與最近紀錄 -->
+<div class="row g-4 mb-5">
+    <!-- 設備分佈面板 -->
+    <div class="col-lg-7">
+        <div class="panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h5 fw-bold mb-0">設備清單精選</h2>
+                <a href="#" class="btn btn-outline-primary btn-sm px-3 border-0">查看全部 <i class="bi bi-chevron-right ms-1"></i></a>
+            </div>
+            
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>設備名稱</th>
+                            <th>類別</th>
+                            <th>當前狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var equipment in Model.Summary.EquipmentHighlights)
+                    {
+                        <tr>
+                            <td class="fw-600">@equipment.Name</td>
+                            <td><span class="text-muted">@equipment.Category</span></td>
+                            <td>
+                                @{
+                                    var badgeClass = equipment.Status?.ToLower() switch {
+                                        "available" => "badge-available",
+                                        "inuse" => "badge-inuse",
+                                        "maintenance" => "badge-maintenance",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@equipment.Status</span>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近借用動態 -->
+    <div class="col-lg-5">
+        <div class="panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h5 fw-bold mb-0">最近借用動態</h2>
+                <i class="bi bi-lightning-charge text-warning"></i>
+            </div>
+            
+            <div class="info-list">
+                @if (!Model.Summary.RecentBorrowRecords.Any())
+                {
+                    <div class="text-center py-5 text-muted small">目前暫無借用紀錄</div>
+                }
+                @foreach (var record in Model.Summary.RecentBorrowRecords)
+                {
+                    <div class="d-flex align-items-center gap-3 mb-4 p-2 rounded-3" style="background: rgba(255,255,255,0.01);">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="small fw-bold">@record.UserName 借用了 @record.EquipmentName</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">狀態：<span class="text-accent-blue">@record.Status</span></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 技術棧展示面板 -->
+<section class="panel mb-0" style="border-left: 4px solid var(--primary);">
+    <div class="d-flex align-items-center gap-3">
+        <div class="h4 mb-0 text-primary"><i class="bi bi-cpu"></i></div>
+        <div>
+            <h2 class="h5 fw-bold mb-1">系統環境資訊</h2>
+            <p class="text-muted small mb-0">ASP.NET Core 8 Web API + Razor Pages Backend, EF Core 8 (SQL Server)</p>
+        </div>
+    </div>
+</section>

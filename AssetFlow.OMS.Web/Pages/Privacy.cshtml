@@ -1,0 +1,56 @@
+@page
+@{
+    ViewData["Title"] = "專案說明與開發筆記";
+}
+
+<section class="panel mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h2 class="display-6 fw-bold text-primary mb-3">AssetFlow EMS</h2>
+            <p class="subtitle">這是一個實驗性的設備管理系統 (Equipment Management System)，旨在展示 ASP.NET Core 8 Web API 與 Razor Pages 的深度結合。</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <i class="bi bi-gear-wide-connected text-primary opacity-25" style="font-size: 8rem;"></i>
+        </div>
+    </div>
+</section>
+
+<div class="grid-3 mb-5">
+    <div class="panel">
+        <div class="h3 mb-3 text-accent-blue"><i class="bi bi-shield-lock"></i></div>
+        <h3 class="h5 fw-bold">身分驗證系統</h3>
+        <p class="text-muted small">採用 JWT (JSON Web Token) 進行 API 授權。系統支援登入、註冊以及基於角色的存取控制 (RBAC)。</p>
+    </div>
+    
+    <div class="panel">
+        <div class="h3 mb-3 text-success"><i class="bi bi-database-check"></i></div>
+        <h3 class="h5 fw-bold">資料持久化</h3>
+        <p class="text-muted small">使用 EF Core 8 與 SQL Server。具備自動種子資料 (Seeding) 功能，確保開發環境能快速就緒。</p>
+    </div>
+    
+    <div class="panel">
+        <div class="h3 mb-3 text-warning"><i class="bi bi-journal-text"></i></div>
+        <h3 class="h5 fw-bold">稽核與日誌</h3>
+        <p class="text-muted small">內建 Audit Log 與 Global Error Handling。所有的設備變動與錯誤都會被精確紀錄。</p>
+    </div>
+</div>
+
+<section class="panel">
+    <h2 class="h5 fw-bold mb-4">開發筆記 (Change Log)</h2>
+    <div class="info-list">
+        <div class="d-flex gap-3 mb-4">
+            <div class="text-primary fw-bold" style="min-width: 100px;">v1.0.4</div>
+            <div>
+                <div class="small fw-bold">UI 大規模升級</div>
+                <div class="text-muted small">導入 Premium Design System，包含側邊欄佈局、深色模式與玻璃擬態介面。</div>
+            </div>
+        </div>
+        <div class="d-flex gap-3 mb-4 border-top border-secondary pt-4 opacity-50">
+            <div class="text-muted fw-bold" style="min-width: 100px;">v1.0.0</div>
+            <div>
+                <div class="small fw-bold">核心 API 完成</div>
+                <div class="text-muted small">完成設備 CRUD、借用歸還、使用者驗證等核心功能路徑。</div>
+            </div>
+        </div>
+    </div>
+</section>

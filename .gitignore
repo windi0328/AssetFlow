@@ -1,0 +1,32 @@
+## [Visual Studio]
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+
+## [Build Results]
+[Bb]in/
+[Ob]j/
+out/
+
+## [Environment Settings]
+.env
+.env.*
+!.env.example
+
+## [User-specific files]
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## [Publish]
+*.publish.xml
+*.pubxml
+*.pubxml.user
+
+## [OS generated files]
+Thumbs.db
+ehthumbs.db
+Desktop.ini
