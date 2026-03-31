@@ -23,110 +23,193 @@
         .metric-card .value { font-size: 2.5rem; font-weight: 700; color: white; margin-top: 0.5rem; }
         .custom-table { width: 100%; border-collapse: collapse; }
         .custom-table th { border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 1rem; }
-        .custom-table td { border-bottom: 1px solid var(--border); padding: 1.2rem 1rem; }
+        .custom-table td { border-bottom: 1px solid var(--border); padding: 1.2rem 1rem; vertical-align: middle; }
         .badge { padding: 0.4em 0.8em; border-radius: 0.5rem; font-size: 0.75rem; }
         .bg-available { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .bg-inuse { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
         .bg-maint { background: rgba(115, 115, 115, 0.1); color: #a3a3a3; }
         
-        /* Modal Style for Dark Theme */
+        /* Form controls */
         .modal-content { background-color: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 1rem; }
         .modal-header { border-bottom: 1px solid var(--border); }
         .modal-footer { border-top: 1px solid var(--border); }
-        .form-control, .form-select { background-color: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); }
-        .form-control:focus, .form-select:focus { background-color: rgba(255,255,255,0.1); color: white; border-color: var(--primary); box-shadow: none; }
         .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        .form-control, .form-select { background-color: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); border-radius: 0.75rem; padding: 0.75rem 1rem; }
+        .form-control:focus, .form-select:focus { background-color: rgba(255,255,255,0.1); color: white; border-color: var(--primary); box-shadow: none; }
     </style>
 </head>
 <body>
     <div class="app-container">
+        <!-- 側邊導覽列 -->
         <aside class="sidebar">
             <div class="sidebar-header"><a class="brand-text" href="index.html"><i class="bi bi-box-seam-fill text-primary"></i> AssetFlow <span class="brand-badge">DEMO</span></a></div>
             <nav class="nav-menu">
                 <a class="nav-item active" onclick="showView('equipments', this)"><i class="bi bi-columns-gap"></i><span>控制台</span></a>
                 <a class="nav-item" onclick="showView('records', this)"><i class="bi bi-clock-history"></i><span>借用紀錄</span></a>
             </nav>
+            <div class="mt-auto mb-4 px-3">
+                <div class="panel p-3 mb-0" style="background: rgba(255,255,255,0.03); padding: 1rem !important;">
+                    <button class="btn btn-outline-danger w-100 btn-sm" onclick="resetSystem()">重設展示資料</button>
+                    <div class="small text-muted mt-2 text-center">清空 LocalStorage 本地暫存</div>
+                </div>
+            </div>
         </aside>
         
+        <!-- 主要內容區 -->
         <main class="main-content">
             <header class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h3 fw-bold mb-1">儀表板</h1>
-                    <p class="text-muted small mb-0">純前端展示版，所有資料即時儲存於您的瀏覽器中。</p>
+                    <p class="text-muted small mb-0">純前端展示版，具有新增、編輯、刪除、搜尋與借用等完整 CRUD 功能。</p>
                 </div>
-                <button class="btn btn-primary" onclick="openAddModal()">
-                    <i class="bi bi-plus-lg me-1"></i> 新增設備
-                </button>
             </header>
 
+            <!-- 視圖1: 控制台與設備管理 -->
             <div id="view-equipments" class="view-item">
                 <div class="row g-4 mb-4">
                     <div class="col-md-4"><div class="panel metric-card"><span class="label">設備總數</span><div class="value" id="s-total">0</div></div></div>
-                    <div class="col-md-4"><div class="panel metric-card"><span class="label">使用中</span><div class="value text-info" id="s-use">0</div></div></div>
-                    <div class="col-md-4"><div class="panel metric-card"><span class="label">維修中</span><div class="value text-muted" id="s-maint">0</div></div></div>
+                    <div class="col-md-4"><div class="panel metric-card"><span class="label">使用中 (In Use)</span><div class="value text-info" id="s-use">0</div></div></div>
+                    <div class="col-md-4"><div class="panel metric-card"><span class="label">維修中 (Maintenance)</span><div class="value text-muted" id="s-maint">0</div></div></div>
                 </div>
                 
                 <div class="panel">
-                    <h3 class="h5 fw-bold mb-4">設備清單</h3>
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>名稱</th>
-                                <th>類別</th>
-                                <th>狀態</th>
-                                <th class="text-end">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="eq-list"></tbody>
-                    </table>
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3" style="border-color: var(--border) !important;">
+                        <h3 class="h5 fw-bold mb-0">設備管理清單</h3>
+                        <button class="btn btn-primary" onclick="openEqModal()">
+                            <i class="bi bi-plus-lg me-1"></i> 新增設備
+                        </button>
+                    </div>
+
+                    <!-- 搜尋與過濾條件 -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <input type="text" id="searchInput" class="form-control" placeholder="關鍵字搜尋名稱..." oninput="render()">
+                        </div>
+                        <div class="col-md-4">
+                            <select id="filterStatus" class="form-select" onchange="render()">
+                                <option value="All">所有狀態 (All)</option>
+                                <option value="Available">可借用 (Available)</option>
+                                <option value="In Use">使用中 (In Use)</option>
+                                <option value="Maintenance">維修中 (Maintenance)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>名稱</th>
+                                    <th>類別</th>
+                                    <th>當前狀態</th>
+                                    <th>位置</th>
+                                    <th class="text-end" style="min-width: 250px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eq-list">
+                                <!-- JS動態渲染 -->
+                            </tbody>
+                        </table>
+                        <div id="noDataResult" class="text-center py-5 d-none text-muted">
+                            <i class="bi bi-search display-6 d-block mb-3 opacity-25"></i>
+                            找不到符合條件的設備。
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- 視圖2: 借用紀錄表 -->
             <div id="view-records" class="view-item d-none">
                 <div class="panel">
-                    <h3 class="h5 fw-bold mb-4">借用動態紀錄</h3>
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>設備</th>
-                                <th>人員</th>
-                                <th>時間</th>
-                                <th>狀態</th>
-                            </tr>
-                        </thead>
-                        <tbody id="rec-list"></tbody>
-                    </table>
+                    <h3 class="h5 fw-bold mb-4">歷史借用動態紀錄</h3>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>借用設備</th>
+                                    <th>人員</th>
+                                    <th>借用時間</th>
+                                    <th>處理動態</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rec-list">
+                                <!-- JS動態渲染 -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 新增設備 Modal -->
-    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <!-- 模態框：新增 / 編輯設備 -->
+    <div class="modal fade" id="eqModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">新增設備</h5>
+                    <h5 class="modal-title fw-bold" id="eqModalTitle">新增設備</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <input type="hidden" id="eq-id">
                     <div class="mb-3">
                         <label class="form-label text-muted small">設備名稱</label>
-                        <input type="text" id="add-name" class="form-control" placeholder="例如: MacBook Pro M3">
+                        <input type="text" id="eq-name" class="form-control" placeholder="例如: MacBook Pro M3">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-muted small">設備類別</label>
+                            <select id="eq-cat" class="form-select">
+                                <option value="Laptop">筆記型電腦 (Laptop)</option>
+                                <option value="Camera">攝影器材 (Camera)</option>
+                                <option value="Tool">工具/儀器 (Tool)</option>
+                                <option value="Other">其他 (Other)</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small">初始狀態</label>
+                            <select id="eq-stat" class="form-select">
+                                <option value="Available">Available (可借用)</option>
+                                <option value="In Use">In Use (使用中)</option>
+                                <option value="Maintenance">Maintenance (維護中)</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-muted small">設備類別</label>
-                        <select id="add-cat" class="form-select">
-                            <option value="Laptop">筆記型電腦 (Laptop)</option>
-                            <option value="Camera">攝影器材 (Camera)</option>
-                            <option value="Tool">工具/儀器 (Tool)</option>
-                            <option value="Other">其他 (Other)</option>
-                        </select>
+                        <label class="form-label text-muted small">存放位置</label>
+                        <input type="text" id="eq-loc" class="form-control" placeholder="例如: A1庫房">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary text-white" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveNewEquipment()">確認新增</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="saveEquipment()">儲存資料</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模態框：借用申請 -->
+    <div class="modal fade" id="borrowModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-info border-2">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-info">借用申請</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="borrow-eq-id">
+                    <div class="mb-4 text-center">
+                        <div class="text-muted small">您即將借用：</div>
+                        <div class="h4 fw-bold mt-1" id="borrow-eq-name">設備名稱</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">借用人姓名或學號/員工編號</label>
+                        <input type="text" id="borrow-user" class="form-control" placeholder="請輸入借用人...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary text-white" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-info text-white px-4" onclick="confirmBorrow()">確認借出</button>
                 </div>
             </div>
         </div>
@@ -134,46 +217,74 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const MOCK = [
-            {id:1, name:"Canon EOS R10", cat:"Camera", stat:"Available"},
-            {id:2, name:"Dell Latitude", cat:"Laptop", stat:"In Use"},
-            {id:3, name:"Fluke 87V", cat:"Tool", stat:"Maintenance"}
+        // --- 核心資料存取邏輯 ---
+        const DEFAULT_EQS = [
+            { id: 1, name: "Canon EOS R10", cat: "Camera", stat: "Available", loc: "A1 Storage" },
+            { id: 2, name: "Dell Latitude 7440", cat: "Laptop", stat: "In Use", loc: "User Desk" },
+            { id: 3, name: "Fluke 87V", cat: "Tool", stat: "Maintenance", loc: "Lab B" },
+            { id: 4, name: "iPad Pro M2", cat: "Other", stat: "Available", loc: "A1 Storage" }
         ];
         
-        let eqs = JSON.parse(localStorage.getItem('ems_gh_eq')) || MOCK;
-        let recs = JSON.parse(localStorage.getItem('ems_gh_rec')) || [{name:"Dell Latitude", user:"Admin", time:"2026-03-31 09:00", st:"Borrowed"}];
+        const DEFAULT_RECS = [
+            { id: 101, name: "Dell Latitude 7440", user: "John Doe", time: new Date().toLocaleString(), st: "Borrowed" }
+        ];
+
+        let eqs = JSON.parse(localStorage.getItem('ems_gh_eq_full')) || DEFAULT_EQS;
+        let recs = JSON.parse(localStorage.getItem('ems_gh_rec_full')) || DEFAULT_RECS;
         
-        let modalInstance = null;
+        let eqModalInstance = null;
+        let borrowModalInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            modalInstance = new bootstrap.Modal(document.getElementById('addModal'));
+            eqModalInstance = new bootstrap.Modal(document.getElementById('eqModal'));
+            borrowModalInstance = new bootstrap.Modal(document.getElementById('borrowModal'));
             render();
         });
 
         const save = () => { 
-            localStorage.setItem('ems_gh_eq', JSON.stringify(eqs)); 
-            localStorage.setItem('ems_gh_rec', JSON.stringify(recs)); 
-            render(); 
+            localStorage.setItem('ems_gh_eq_full', JSON.stringify(eqs)); 
+            localStorage.setItem('ems_gh_rec_full', JSON.stringify(recs)); 
         };
 
         const render = () => {
-            const list = document.getElementById('eq-list'); 
-            list.innerHTML = "";
-            eqs.forEach(e => {
-                const tr = document.createElement('tr');
-                const badge = e.stat === 'Available' ? 'bg-available' : (e.stat === 'In Use' ? 'bg-inuse' : 'bg-maint');
-                tr.innerHTML = `
-                    <td class="fw-bold">${e.name}</td>
-                    <td><span class="text-muted small">${e.cat}</span></td>
-                    <td><span class="badge ${badge}">${e.stat}</span></td>
-                    <td class="text-end">
-                        ${e.stat === 'Available' ? `<button class="btn btn-sm btn-outline-primary" onclick="borrowItem(${e.id})">借用</button>` : ''}
-                        ${e.stat === 'In Use' ? `<button class="btn btn-sm btn-outline-info" onclick="returnItem(${e.id})">歸還</button>` : ''}
-                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem(${e.id})" title="刪除設備"><i class="bi bi-trash"></i></button>
-                    </td>`;
-                list.appendChild(tr);
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const filter = document.getElementById('filterStatus').value;
+
+            // 過濾資料
+            const filteredEqs = eqs.filter(e => {
+                const matchKey = e.name.toLowerCase().includes(keyword) || e.loc.toLowerCase().includes(keyword);
+                const matchFilter = filter === 'All' || e.stat === filter;
+                return matchKey && matchFilter;
             });
 
+            // 渲染列表
+            const list = document.getElementById('eq-list'); 
+            const noData = document.getElementById('noDataResult');
+            list.innerHTML = "";
+            
+            if (filteredEqs.length === 0) {
+                noData.classList.remove('d-none');
+            } else {
+                noData.classList.add('d-none');
+                filteredEqs.forEach(e => {
+                    const tr = document.createElement('tr');
+                    const badge = e.stat === 'Available' ? 'bg-available' : (e.stat === 'In Use' ? 'bg-inuse' : 'bg-maint');
+                    tr.innerHTML = `
+                        <td class="fw-bold">${e.name}</td>
+                        <td><span class="text-muted small">${e.cat}</span></td>
+                        <td><span class="badge ${badge}">${e.stat}</span></td>
+                        <td class="text-muted small"><i class="bi bi-geo-alt me-1"></i>${e.loc}</td>
+                        <td class="text-end">
+                            ${e.stat === 'Available' ? `<button class="btn btn-sm btn-info text-white me-1 px-3" onclick="openBorrowModal(${e.id})">借出</button>` : ''}
+                            ${e.stat === 'In Use' ? `<button class="btn btn-sm btn-success me-1 px-3" onclick="returnItem(${e.id})">歸還</button>` : ''}
+                            <button class="btn btn-sm btn-outline-secondary" onclick="openEqModal(${e.id})" title="編輯"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteItem(${e.id})" title="刪除"><i class="bi bi-trash"></i></button>
+                        </td>`;
+                    list.appendChild(tr);
+                });
+            }
+
+            // 渲染紀錄
             const rl = document.getElementById('rec-list'); 
             rl.innerHTML = "";
             recs.forEach(r => { 
@@ -187,47 +298,116 @@
                 rl.appendChild(tr); 
             });
 
+            // 更新統計
             document.getElementById('s-total').innerText = eqs.length;
             document.getElementById('s-use').innerText = eqs.filter(e => e.stat === 'In Use').length;
             document.getElementById('s-maint').innerText = eqs.filter(e => e.stat === 'Maintenance').length;
         };
 
-        window.borrowItem = (id) => { 
-            const e = eqs.find(x => x.id === id); 
-            e.stat = 'In Use'; 
-            recs.unshift({name:e.name, user:"User" + Math.floor(Math.random()*100), time:new Date().toLocaleString(), st:"Borrowed"}); 
-            save(); 
+        // --- CRUD 操作 ---
+
+        // 打開新增/編輯 Modal
+        window.openEqModal = (id = null) => {
+            const titleEl = document.getElementById('eqModalTitle');
+            if(id) {
+                // Edit Mode
+                const eq = eqs.find(x => x.id === id);
+                titleEl.innerText = "編輯設備詳情";
+                document.getElementById('eq-id').value = eq.id;
+                document.getElementById('eq-name').value = eq.name;
+                document.getElementById('eq-cat').value = eq.cat;
+                document.getElementById('eq-stat').value = eq.stat;
+                document.getElementById('eq-loc').value = eq.loc;
+            } else {
+                // Add Mode
+                titleEl.innerText = "新增設備資產";
+                document.getElementById('eq-id').value = '';
+                document.getElementById('eq-name').value = '';
+                document.getElementById('eq-cat').value = 'Laptop';
+                document.getElementById('eq-stat').value = 'Available';
+                document.getElementById('eq-loc').value = '';
+            }
+            eqModalInstance.show();
         };
 
-        window.returnItem = (id) => { 
-            const e = eqs.find(x => x.id === id); 
-            e.stat = 'Available'; 
-            recs.unshift({name:e.name, user:"System", time:new Date().toLocaleString(), st:"Returned"}); 
-            save(); 
+        // 儲存新增或編輯
+        window.saveEquipment = () => {
+            const id = document.getElementById('eq-id').value;
+            const name = document.getElementById('eq-name').value.trim();
+            const cat = document.getElementById('eq-cat').value;
+            const stat = document.getElementById('eq-stat').value;
+            const loc = document.getElementById('eq-loc').value.trim();
+
+            if(!name || !loc) return alert("名稱與位置不可為空！");
+
+            if(id) {
+                // Update
+                const eq = eqs.find(x => x.id == id);
+                eq.name = name; eq.cat = cat; eq.stat = stat; eq.loc = loc;
+            } else {
+                // Insert
+                const newId = eqs.length > 0 ? Math.max(...eqs.map(e => e.id)) + 1 : 1;
+                eqs.push({ id: newId, name: name, cat: cat, stat: stat, loc: loc });
+            }
+            
+            save();
+            render();
+            eqModalInstance.hide();
         };
 
+        // 刪除
         window.deleteItem = (id) => {
-            if(confirm("確定要刪除這項設備嗎？")) {
+            const eq = eqs.find(x => x.id === id);
+            if(confirm(`警告！您確定要刪除「${eq.name}」這項設備嗎？此操作不可逆。`)) {
                 eqs = eqs.filter(x => x.id !== id);
-                save();
+                save(); render();
             }
         };
 
-        window.openAddModal = () => {
-            document.getElementById('add-name').value = '';
-            modalInstance.show();
+        // 打開借用 Modal
+        window.openBorrowModal = (id) => {
+            const eq = eqs.find(x => x.id === id);
+            document.getElementById('borrow-eq-id').value = eq.id;
+            document.getElementById('borrow-eq-name').innerText = eq.name;
+            document.getElementById('borrow-user').value = '';
+            borrowModalInstance.show();
         };
 
-        window.saveNewEquipment = () => {
-            const name = document.getElementById('add-name').value.trim();
-            const cat = document.getElementById('add-cat').value;
-            if(!name) return alert("請輸入設備名稱");
+        // 確認借用
+        window.confirmBorrow = () => {
+            const id = document.getElementById('borrow-eq-id').value;
+            const user = document.getElementById('borrow-user').value.trim();
+            if(!user) return alert("請填寫借用人資料！");
 
-            const newId = eqs.length > 0 ? Math.max(...eqs.map(e => e.id)) + 1 : 1;
-            eqs.push({id: newId, name: name, cat: cat, stat: "Available"});
+            const eq = eqs.find(x => x.id == id);
+            eq.stat = 'In Use';
+            recs.unshift({ id: Date.now(), name: eq.name, user: user, time: new Date().toLocaleString(), st: "Borrowed" });
             
-            save();
-            modalInstance.hide();
+            save(); render();
+            borrowModalInstance.hide();
+        };
+
+        // 歸還
+        window.returnItem = (id) => { 
+            const eq = eqs.find(x => x.id === id); 
+            if(confirm(`確認將「${eq.name}」歸還回庫存嗎？`)) {
+                eq.stat = 'Available'; 
+                // 嘗試從最近的紀錄找到借用人
+                const lastRec = recs.find(r => r.name === eq.name && r.st === 'Borrowed');
+                const user = lastRec ? lastRec.user : '系統管理';
+
+                recs.unshift({ id: Date.now(), name: eq.name, user: user, time: new Date().toLocaleString(), st: "Returned" }); 
+                save(); render(); 
+            }
+        };
+
+        // 重設系統 (清除全資料)
+        window.resetSystem = () => {
+            if(confirm("即將清空本瀏覽器的所有修改紀錄，並還原成預設展示資料。確定執行？")) {
+                localStorage.removeItem('ems_gh_eq_full');
+                localStorage.removeItem('ems_gh_rec_full');
+                location.reload();
+            }
         };
 
         window.showView = (v, el) => { 
